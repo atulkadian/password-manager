@@ -1,4 +1,9 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+
+// Delete the existing model if it exists to prevent caching issues
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -41,8 +46,9 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-UserSchema.index({ email: 1 })
+// Only add the index if it doesn't already exist
+UserSchema.index({ email: 1 });
 
-export const User = mongoose.models.User || mongoose.model("User", UserSchema)
+export const User = mongoose.model("User", UserSchema);

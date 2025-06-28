@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+// Delete the existing model if it exists to prevent caching issues
+if (mongoose.models.Password) {
+  delete mongoose.models.Password;
+}
+
 const PasswordSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -47,5 +52,4 @@ PasswordSchema.index({ userId: 1, category: 1 });
 PasswordSchema.index({ userId: 1, title: 1 });
 PasswordSchema.index({ userId: 1, expiryDate: 1 });
 
-export const Password =
-  mongoose.models.Password || mongoose.model("Password", PasswordSchema);
+export const Password = mongoose.model("Password", PasswordSchema);

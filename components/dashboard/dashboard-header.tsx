@@ -13,22 +13,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Shield, Settings, LogOut, Plus, Menu } from "lucide-react";
+import { Shield, Settings, LogOut, Menu, CreditCard, Key } from "lucide-react";
 import { AddPasswordDialog } from "./add-password-dialog";
+import { AddCardDialog } from "./add-card-dialog";
 
 interface DashboardHeaderProps {
   user: any;
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
-  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showAddPasswordDialog, setShowAddPasswordDialog] = useState(false);
+  const [showAddCardDialog, setShowAddCardDialog] = useState(false);
 
   const handleSignOut = () => {
     signOut({ callbackUrl: "/" });
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <header className="bg-white dark:bg-card border-b border-gray-200 dark:border-border">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -39,14 +41,20 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           </div>
 
           <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Add Password Button - Hidden on mobile, shown in dropdown */}
-            <Button
-              onClick={() => setShowAddDialog(true)}
-              className="hidden md:flex"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Password
-            </Button>
+            {/* Add Buttons - Hidden on mobile, shown in dropdown */}
+            <div className="hidden md:flex space-x-2">
+              <Button
+                onClick={() => setShowAddPasswordDialog(true)}
+                variant="outline"
+              >
+                <Key className="h-4 w-4 mr-2" />
+                Add Password
+              </Button>
+              <Button onClick={() => setShowAddCardDialog(true)}>
+                <CreditCard className="h-4 w-4 mr-2" />
+                Add Card
+              </Button>
+            </div>
 
             {/* Theme Toggle - Hidden on mobile */}
             <div className="hidden md:block">
@@ -62,9 +70,15 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => setShowAddDialog(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem
+                    onClick={() => setShowAddPasswordDialog(true)}
+                  >
+                    <Key className="mr-2 h-4 w-4" />
                     Add Password
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowAddCardDialog(true)}>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    Add Card
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
@@ -139,7 +153,14 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         </div>
       </div>
 
-      <AddPasswordDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <AddPasswordDialog
+        open={showAddPasswordDialog}
+        onOpenChange={setShowAddPasswordDialog}
+      />
+      <AddCardDialog
+        open={showAddCardDialog}
+        onOpenChange={setShowAddCardDialog}
+      />
     </header>
   );
 }

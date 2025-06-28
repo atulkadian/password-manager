@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Key, AlertTriangle, Folder, Calendar } from "lucide-react";
+import { Key, AlertTriangle, Folder, Calendar, CreditCard } from "lucide-react";
 
 interface Stats {
   totalPasswords: number;
   weakPasswords: number;
   reusedPasswords: number;
   expiredPasswords: number;
+  totalCards: number;
+  expiredCards: number;
   categories: number;
 }
 
@@ -18,6 +20,8 @@ export function DashboardStats() {
     weakPasswords: 0,
     reusedPasswords: 0,
     expiredPasswords: 0,
+    totalCards: 0,
+    expiredCards: 0,
     categories: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -28,11 +32,25 @@ export function DashboardStats() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch("/api/passwords/stats");
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
+      const [passwordsResponse, cardsResponse] = await Promise.all([
+        fetch("/api/passwords/stats"),
+        fetch("/api/cards/stats"),
+      ]);
+
+      const passwordsData = passwordsResponse.ok
+        ? await passwordsResponse.json()
+        : {};
+      const cardsData = cardsResponse.ok ? await cardsResponse.json() : {};
+
+      setStats({
+        totalPasswords: passwordsData.totalPasswords || 0,
+        weakPasswords: passwordsData.weakPasswords || 0,
+        reusedPasswords: passwordsData.reusedPasswords || 0,
+        expiredPasswords: passwordsData.expiredPasswords || 0,
+        totalCards: cardsData.totalCards || 0,
+        expiredCards: cardsData.expiredCards || 0,
+        categories: passwordsData.categories || 0,
+      });
     } catch (error) {
       console.error("Failed to fetch stats:", error);
     } finally {
@@ -48,20 +66,20 @@ export function DashboardStats() {
       color: "text-blue-600 dark:text-blue-400",
     },
     {
+      title: "Total Cards",
+      value: stats.totalCards,
+      icon: CreditCard,
+      color: "text-purple-600 dark:text-purple-400",
+    },
+    {
       title: "Weak Passwords",
       value: stats.weakPasswords,
       icon: AlertTriangle,
       color: "text-red-600 dark:text-red-400",
     },
     {
-      title: "Reused Passwords",
-      value: stats.reusedPasswords,
-      icon: Shield,
-      color: "text-yellow-600 dark:text-yellow-400",
-    },
-    {
-      title: "Expired Passwords",
-      value: stats.expiredPasswords,
+      title: "Expired Items",
+      value: stats.expiredPasswords + stats.expiredCards,
       icon: Calendar,
       color: "text-orange-600 dark:text-orange-400",
     },

@@ -70,6 +70,12 @@ export function PasswordList() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
 
+  const [showEditMasterPasswordModal, setShowEditMasterPasswordModal] =
+    useState(false);
+  const [pendingEditPassword, setPendingEditPassword] =
+    useState<PasswordEntry | null>(null);
+  const [decryptedPasswordForEdit, setDecryptedPasswordForEdit] = useState("");
+
   useEffect(() => {
     fetchPasswords();
   }, []);
@@ -180,8 +186,25 @@ export function PasswordList() {
   };
 
   const editPassword = (password: PasswordEntry) => {
-    setEditingPassword(password);
-    setShowEditDialog(true);
+    setPendingEditPassword(password);
+    setShowEditMasterPasswordModal(true);
+  };
+
+  const handleEditMasterPasswordSubmit = async (masterPassword: string) => {
+    if (!pendingEditPassword) return;
+
+    try {
+      const decrypted = await decryptPassword(
+        pendingEditPassword.encryptedPassword,
+        masterPassword
+      );
+      setDecryptedPasswordForEdit(decrypted);
+      setEditingPassword(pendingEditPassword);
+      setShowEditDialog(true);
+      setPendingEditPassword(null);
+    } catch (error) {
+      throw new Error("Invalid master password");
+    }
   };
 
   const deletePassword = async (passwordId: string) => {
@@ -253,9 +276,9 @@ export function PasswordList() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <CardTitle>Your Passwords</CardTitle>
-            <div className="relative w-64">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by title, username, website..."
@@ -486,10 +509,19 @@ export function PasswordList() {
         }
       />
 
+      <MasterPasswordModal
+        open={showEditMasterPasswordModal}
+        onOpenChange={setShowEditMasterPasswordModal}
+        onSubmit={handleEditMasterPasswordSubmit}
+        title="Load Password for Editing"
+        description="Enter your master password to load this password for editing"
+      />
+
       <EditPasswordDialog
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
         password={editingPassword}
+        decryptedPassword={decryptedPasswordForEdit}
         onPasswordUpdated={fetchPasswords}
       />
     </>
