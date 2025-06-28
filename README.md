@@ -1,4 +1,4 @@
-# SecureVault - Personal Password Manager
+# Personal Password Manager
 
 A minimalist, self-hosted password manager with client-side encryption and dark/light theme support. Replace your insecure tools like WhatsApp or Telegram saved messages. Open-source and contributions welcome!
 
@@ -36,52 +36,56 @@ A minimalist, self-hosted password manager with client-side encryption and dark/
 
 - Node.js 20+
 - MongoDB (local or cloud)
+- pnpm
 
-### Installation
+### 🚀 Installation
 
 1. **Clone the repository**
-   \`\`\`bash
-   git clone https://github.com/yourusername/securevault.git
+
+   ```bash
+   git clone https://github.com/atulkadian/password-vault
    cd securevault
-   \`\`\`
+   ```
 
 2. **Install dependencies**
-   \`\`\`bash
-   npm install
-   \`\`\`
+
+   ```bash
+   pnpm install
+   ```
 
 3. **Set up environment variables**
-   \`\`\`bash
-   cp .env.example .env.local
-   \`\`\`
 
-   Add `.env` with your configuration:
-   \`\`\`env
+   ```bash
+   cp .env.example .env
+   ```
+
+   Then open `.env` and update the following:
+
+   ```env
    MONGODB_URI=mongodb://localhost:27017/securevault
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your-super-secret-key-here
-   \`\`\`
+   ```
 
 4. **Start MongoDB**
-   \`\`\`bash
 
-   # If using local MongoDB
+   If you're using **local MongoDB**, make sure it's running:
 
+   ```bash
    mongod
+   ```
 
-   # Or use MongoDB Atlas (cloud)
-
-   # Update MONGODB_URI in .env
-
-   \`\`\`
+   Or, if you're using **MongoDB Atlas**, update `MONGODB_URI` in `.env` with your connection string.
 
 5. **Run the development server**
-   \`\`\`bash
-   npm run dev
-   \`\`\`
+
+   ```bash
+   pnpm run dev
+   ```
 
 6. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+
+   Visit: [http://localhost:3000](http://localhost:3000)
 
 ## Usage
 
@@ -93,17 +97,9 @@ A minimalist, self-hosted password manager with client-side encryption and dark/
    - **Master Password**: For encrypting your passwords (12+ characters)
 3. **Important**: Keep your master password safe - it cannot be recovered!
 
-### Docker
+## Docker
 
 TODO
-
-## Security Considerations
-
-- Master passwords are never sent to or stored on the server
-- All password encryption/decryption happens client-side
-- Rate limiting prevents brute force attacks
-- Secure headers protect against common vulnerabilities
-- Input validation prevents injection attacks
 
 ## Contributing
 
