@@ -1,8 +1,8 @@
-# Personal Password Manager
+# Password Manager
 
 <img width="1580" alt="Dashboard" src="https://github.com/user-attachments/assets/2f9ac9de-7d61-47d8-88ba-925220adcd61" />
 
-A minimalist, self-hosted password manager with client-side encryption and dark/light theme support. Replace your insecure tools like WhatsApp or Telegram saved messages. Open-source and contributions welcome!
+A minimalist, self-hosted personal password manager with client-side encryption support. Replace your insecure tools like WhatsApp or Telegram saved messages. Open-source and contributions welcome!
 
 ## Features
 
@@ -30,7 +30,6 @@ A minimalist, self-hosted password manager with client-side encryption and dark/
 - **Authentication**: NextAuth.js
 - **Encryption**: CryptoJS (AES-256)
 - **UI**: shadcn/ui + Tailwind CSS
-- **Language**: TypeScript
 
 ## Getting Started
 
@@ -113,4 +112,4 @@ TODO
 
 ## License
 
-TBD
+MIT License
