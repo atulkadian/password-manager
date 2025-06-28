@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const PasswordSchema = new mongoose.Schema({
   userId: {
@@ -29,6 +29,9 @@ const PasswordSchema = new mongoose.Schema({
   notes: {
     type: String,
   },
+  expiryDate: {
+    type: Date,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -37,10 +40,12 @@ const PasswordSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-PasswordSchema.index({ userId: 1 })
-PasswordSchema.index({ userId: 1, category: 1 })
-PasswordSchema.index({ userId: 1, title: 1 })
+PasswordSchema.index({ userId: 1 });
+PasswordSchema.index({ userId: 1, category: 1 });
+PasswordSchema.index({ userId: 1, title: 1 });
+PasswordSchema.index({ userId: 1, expiryDate: 1 });
 
-export const Password = mongoose.models.Password || mongoose.model("Password", PasswordSchema)
+export const Password =
+  mongoose.models.Password || mongoose.model("Password", PasswordSchema);

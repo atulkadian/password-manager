@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,21 +23,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { encryptPassword } from "@/lib/encryption";
+import { encryptPassword, decryptPassword } from "@/lib/encryption";
 import { PasswordGenerator } from "./password-generator";
 import { MasterPasswordModal } from "./master-password-modal";
 import { PasswordStrengthIndicator } from "./password-strength-indicator";
 import { RefreshCw, Calendar } from "lucide-react";
 
-interface AddPasswordDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface PasswordEntry {
+  _id: string;
+  title: string;
+  username: string;
+  encryptedPassword: string;
+  website: string;
+  category: string;
+  notes: string;
+  expiryDate?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export function AddPasswordDialog({
+interface EditPasswordDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  password: PasswordEntry | null;
+  onPasswordUpdated: () => void;
+}
+
+export function EditPasswordDialog({
   open,
   onOpenChange,
-}: AddPasswordDialogProps) {
+  password,
+  onPasswordUpdated,
+}: EditPasswordDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
     username: "",
@@ -50,68 +67,98 @@ export function AddPasswordDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
   const [showMasterPasswordModal, setShowMasterPasswordModal] = useState(false);
+  const [masterPasswordAction, setMasterPasswordAction] = useState<
+    "load" | "save"
+  >("load");
+  const [originalEncryptedPassword, setOriginalEncryptedPassword] =
+    useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (password && open) {
+      setFormData({
+        title: password.title,
+        username: password.username,
+        password: "",
+        website: password.website,
+        category: password.category,
+        notes: password.notes,
+        expiryDate: password.expiryDate
+          ? password.expiryDate.split("T")[0]
+          : "",
+      });
+      setOriginalEncryptedPassword(password.encryptedPassword);
+      setMasterPasswordAction("load");
+      setShowMasterPasswordModal(true);
+    }
+  }, [password, open]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowMasterPasswordModal(true);
+  const handleMasterPasswordSubmit = async (masterPassword: string) => {
+    if (masterPasswordAction === "load") {
+      // Load existing password for editing
+      try {
+        const decrypted = await decryptPassword(
+          originalEncryptedPassword,
+          masterPassword
+        );
+        setFormData((prev) => ({ ...prev, password: decrypted }));
+        setShowMasterPasswordModal(false);
+      } catch (error) {
+        throw new Error("Invalid master password");
+      }
+    } else {
+      // Save updated password
+      setIsLoading(true);
+      try {
+        const encryptedPassword = await encryptPassword(
+          formData.password,
+          masterPassword
+        );
+
+        const response = await fetch(`/api/passwords/${password?._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+            encryptedPassword,
+            expiryDate: formData.expiryDate || null,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update password");
+        }
+
+        toast({
+          title: "Success",
+          description: "Password updated successfully",
+        });
+
+        onPasswordUpdated();
+        onOpenChange(false);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update password",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+        setShowMasterPasswordModal(false);
+      }
+    }
   };
 
-  const handleMasterPasswordSubmit = async (masterPassword: string) => {
-    setIsLoading(true);
-
-    try {
-      const encryptedPassword = await encryptPassword(
-        formData.password,
-        masterPassword
-      );
-
-      const response = await fetch("/api/passwords", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          encryptedPassword,
-          expiryDate: formData.expiryDate || null,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save password");
-      }
-
-      toast({
-        title: "Success",
-        description: "Password saved successfully",
-      });
-
-      setFormData({
-        title: "",
-        username: "",
-        password: "",
-        website: "",
-        category: "Personal",
-        notes: "",
-        expiryDate: "",
-      });
-      onOpenChange(false);
-      window.location.reload(); // Refresh to show new password
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save password",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-      setShowMasterPasswordModal(false);
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setMasterPasswordAction("save");
+    setShowMasterPasswordModal(true);
   };
 
   const handleGeneratedPassword = (password: string) => {
@@ -119,15 +166,26 @@ export function AddPasswordDialog({
     setShowGenerator(false);
   };
 
+  const handleClose = () => {
+    setFormData({
+      title: "",
+      username: "",
+      password: "",
+      website: "",
+      category: "Personal",
+      notes: "",
+      expiryDate: "",
+    });
+    onOpenChange(false);
+  };
+
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Add New Password</DialogTitle>
-            <DialogDescription>
-              Add a new password entry to your vault
-            </DialogDescription>
+            <DialogTitle>Edit Password</DialogTitle>
+            <DialogDescription>Update your password entry</DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -240,15 +298,11 @@ export function AddPasswordDialog({
             </div>
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Password"}
+                {isLoading ? "Updating..." : "Update Password"}
               </Button>
             </DialogFooter>
           </form>
@@ -265,8 +319,14 @@ export function AddPasswordDialog({
         open={showMasterPasswordModal}
         onOpenChange={setShowMasterPasswordModal}
         onSubmit={handleMasterPasswordSubmit}
-        title="Encrypt Password"
-        description="Enter your master password to encrypt and save this password"
+        title={
+          masterPasswordAction === "load" ? "Load Password" : "Encrypt Password"
+        }
+        description={
+          masterPasswordAction === "load"
+            ? "Enter your master password to load this password for editing"
+            : "Enter your master password to encrypt and save the updated password"
+        }
       />
     </>
   );
