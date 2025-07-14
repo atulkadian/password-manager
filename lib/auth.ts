@@ -47,7 +47,7 @@ export const authOptions = {
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as any,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   jwt: {
@@ -58,13 +58,13 @@ export const authOptions = {
     signUp: "/auth/register",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (token) {
         session.user.id = token.id as string;
       }

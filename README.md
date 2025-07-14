@@ -6,22 +6,25 @@ A minimalist, self-hosted personal password manager with client-side encryption 
 
 ## Features
 
-- 🔐 **End-to-End Encryption**: Passwords are encrypted on your device before being stored
+- 🔐 **End-to-End Encryption**: Passwords and card data are encrypted on your device before being stored
+- 💳 **Card Management**: Securely store credit/debit card details (number, CVV, PIN, expiry, cardholder, bank, notes)
 - 🔑 **Password Generator**: Generate strong, unique passwords with customizable options
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
 - 🌙 **Dark/Light Theme**: Toggle between themes with system preference support
-- 📊 **Security Dashboard**: Monitor weak and reused passwords
 - 🏷️ **Categories**: Organize passwords with custom categories
-- 🔍 **Search & Filter**: Quickly find passwords with advanced search
+- 🔍 **Search & Filter**: Quickly find passwords and cards with advanced search
+- 🗂️ **Password & Card Organization**: Edit, delete, and manage your vault items easily
 
 ## Security Features
 
 - Client-side AES-256 encryption with PBKDF2 key derivation
-- Master password never stored on server
+- Master password never stored or sent to the server
 - Rate limiting and brute-force protection
-- Secure session management with JWT
+- Secure session management with JWT (NextAuth.js)
 - CSRF protection and secure headers
 - Input validation and sanitization
+
+> **Note:** Two-factor authentication (2FA/TOTP) is not yet implemented, but the codebase is structured to support it in the future.
 
 ## Tech Stack
 
@@ -44,8 +47,8 @@ A minimalist, self-hosted personal password manager with client-side encryption 
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/atulkadian/password-vault
-   cd securevault
+   git clone https://github.com/atulkadian/password-manager
+   cd password-manager
    ```
 
 2. **Install dependencies**
@@ -63,7 +66,7 @@ A minimalist, self-hosted personal password manager with client-side encryption 
    Then open `.env` and update the following:
 
    ```env
-   MONGODB_URI=mongodb://localhost:27017/securevault
+   MONGODB_URI=mongodb://localhost:27017/password-manager
    NEXTAUTH_URL=http://localhost:3000
    NEXTAUTH_SECRET=your-super-secret-key-here
    ```
@@ -95,7 +98,7 @@ A minimalist, self-hosted personal password manager with client-side encryption 
 1. Click "Get Started" on the homepage
 2. Fill in your details including:
    - **Account Password**: For logging into the app
-   - **Master Password**: For encrypting your passwords (12+ characters)
+   - **Master Password**: For encrypting your passwords and cards (12+ characters)
 3. **Important**: Keep your master password safe - it cannot be recovered!
 
 ## Docker

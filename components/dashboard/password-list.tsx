@@ -24,6 +24,7 @@ import {
   Globe,
   Calendar,
   AlertTriangle,
+  Download,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { decryptPassword } from "@/lib/encryption";
@@ -236,6 +237,28 @@ export function PasswordList() {
     }
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const res = await fetch("/api/passwords/export");
+      if (!res.ok) throw new Error("Failed to export CSV");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "securevault-passwords.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast({
+        title: "Export failed",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const isExpired = (expiryDate?: string) => {
     if (!expiryDate) return false;
     return new Date(expiryDate) < new Date();
@@ -278,14 +301,24 @@ export function PasswordList() {
         <CardHeader>
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <CardTitle>Your Passwords</CardTitle>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by title, username, website..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by title, username, website..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+              <Button
+                variant="outline"
+                className="ml-2 whitespace-nowrap"
+                onClick={handleExportCSV}
+                title="Export as CSV"
+              >
+                <Download className="h-4 w-4 mr-1" /> Export CSV
+              </Button>
             </div>
           </div>
         </CardHeader>
